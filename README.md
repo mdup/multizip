@@ -6,7 +6,7 @@ Zip 3, 4, 5 or more Rust iterators
 ## Description
 
 With Rust's stdlib you can only zip 2 iterators at a time:
-```
+```rust
 let a: Vec<i8> = vec![0, 1, 2];
 let b: Vec<i8> = vec![3, 4, 5];
 let c: Vec<i8> = vec![6, 7, 8];
@@ -24,7 +24,7 @@ let abcd = a.iter().zip(b.iter()).zip(c.iter()).zip(d.iter())
 ```
 
 With `multizip`, you get a flattened version of `zip`:
-```
+```rust
 let abc = multizip::zip3(a.iter(),
                          b.iter(),
                          c.iter())

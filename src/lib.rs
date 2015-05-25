@@ -34,80 +34,66 @@ fn zip2<U, V>(u: U, v: V) -> Zip2<U::IntoIter, V::IntoIter> where
 }
 
 /*
- * zip3
+ * The generating macro is honestly hard to read, so if you feel like you really
+ * need to dive into it, here is an example of what it generates. This is the
+ * implementation of zip4.
+ *
+ * As you can see, it is based on a struct Zip4<A, B, C, D> which acts as the
+ * Zip struct in Rust's stdlib. It recursively builds on the previous version,
+ * (here: Zip3) and uses Zip to store both a Zip3 + another element, which makes
+ * 4 of them in total.
  */
-#[derive(Clone)]
-#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
-pub struct Zip3<A, B, C> {
-    subzip: Zip<Zip2<A, B>, C>
-}
-impl<A, B, C> Iterator for Zip3<A, B, C> where A: Iterator, B: Iterator, C: Iterator
-{
-    type Item = (A::Item, B::Item, C::Item);
+// #[derive(Clone)]
+// #[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
+// pub struct Zip4<A, B, C, D> {
+//     subzip: Zip<Zip3<A, B, C>, D>
+// }
+// impl<A, B, C, D> Iterator for Zip4<A, B, C, D> where
+//     A: Iterator,
+//     B: Iterator,
+//     C: Iterator,
+//     D: Iterator,
+// {
+//     type Item = (A::Item, B::Item, C::Item, D::Item);
+//
+//     #[inline]
+//     fn next(&mut self) -> Option<(A::Item, B::Item, C::Item, D::Item)> {
+//         self.subzip.next().map(|((a, b, c), d)| (a, b, c, d))
+//     }
+//
+//     #[inline]
+//     fn size_hint(&self) -> (usize, Option<usize>) {
+//         self.subzip.size_hint()
+//     }
+// }
+//
+// fn zip4<IA, IB, IC, ID>(ia: IA, ib: IB, ic: IC, id: ID)
+//     -> Zip4<IA::IntoIter, IB::IntoIter, IC::IntoIter, ID::IntoIter> where
+//     IA: IntoIterator,
+//     IB: IntoIterator,
+//     IC: IntoIterator,
+//     ID: IntoIterator,
+// {
+//     Zip4 {
+//         subzip: zip3(ia, ib, ic).zip(id.into_iter())
+//     }
+// }
 
-    #[inline]
-    fn next(&mut self) -> Option<(A::Item, B::Item, C::Item)> {
-        self.subzip.next().map(|((a, b), c)| (a, b, c))
-    }
-
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.subzip.size_hint()
-    }
-}
-
-fn zip3<U, V, W>(u: U, v: V, w: W) -> Zip3<U::IntoIter, V::IntoIter, W::IntoIter> where
-    U: IntoIterator,
-    V: IntoIterator,
-    W: IntoIterator,
-{
-    Zip3 {
-        subzip: zip2(u, v).zip(w.into_iter())
-    }
-}
-
-/*
- * zip4
- */
-#[derive(Clone)]
-#[must_use = "iterator adaptors are lazy and do nothing unless consumed"]
-pub struct Zip4<A, B, C, D> {
-    subzip: Zip<Zip3<A, B, C>, D>
-}
-impl<A, B, C, D> Iterator for Zip4<A, B, C, D> where
-    A: Iterator,
-    B: Iterator,
-    C: Iterator,
-    D: Iterator,
-{
-    type Item = (A::Item, B::Item, C::Item, D::Item);
-
-    #[inline]
-    fn next(&mut self) -> Option<(A::Item, B::Item, C::Item, D::Item)> {
-        self.subzip.next().map(|((a, b, c), d)| (a, b, c, d))
-    }
-
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.subzip.size_hint()
-    }
-}
-
-fn zip4<IA, IB, IC, ID>(ia: IA, ib: IB, ic: IC, id: ID)
-    -> Zip4<IA::IntoIter, IB::IntoIter, IC::IntoIter, ID::IntoIter> where
-    IA: IntoIterator,
-    IB: IntoIterator,
-    IC: IntoIterator,
-    ID: IntoIterator,
-{
-    Zip4 {
-        subzip: zip3(ia, ib, ic).zip(id.into_iter())
-    }
-}
-
-/*
- * zip4
- */
+// This macro will create the function `$zipn`, building on the previous stage
+// `$zipnprev`. It needs a lot of arguments which are:
+//   * $ZipN: the current ZipN struct
+//   * $zipn: the current zipn function
+//   * $ZipNPrev: the previous ZipN struct (NPrev == N-1)
+//   * $zipnprev: the previous zipn function (nprev = n-1)
+//   * $A: loops over A, B, C... type of the item zipped over
+//   * $a: loops over a, b, c... name of a variable for the type A, B, C...
+//   * $IA: loops over IA, IB, IC... type of the Iterator for A
+//   * $ia: loops over ia, ib, ic... name of a variable for the type IA, IB, IC...
+//   * $ALast: like $A but the last one. For example, it is D in Zip4<A, B, C, D>
+//   * $alast: name of a variable for the type $ALast (ex: d if $ALast is D)
+//   * $IALast: like $IA but the last one. For example, it is ID in Zip4.
+//   * $ialast: name of a variable for the type $IALast (ex: id if $IALast is ID)
+//
 macro_rules! impl_zipn {
     ($ZipN:ident $zipn:ident $ZipNPrev:ident $zipnprev:ident ( $($A:ident $a:ident $IA:ident $ia:ident)+ ) $ALast:ident $alast:ident $IALast:ident $ialast:ident) => (
         #[derive(Clone)]
@@ -141,44 +127,18 @@ macro_rules! impl_zipn {
                 subzip: $zipnprev($($ia),*).zip($ialast.into_iter())
             }
         }
-        /*
-        pub struct Zip4<A, B, C, D> {
-            subzip: Zip<Zip3<A, B, C>, D>
-        }
-        impl<A, B, C, D> Iterator for Zip4<A, B, C, D> where
-            A: Iterator,
-            B: Iterator,
-            C: Iterator,
-            D: Iterator,
-        {
-            type Item = (A::Item, B::Item, C::Item, D::Item);
-
-            #[inline]
-            fn next(&mut self) -> Option<(A::Item, B::Item, C::Item, D::Item)> {
-                self.subzip.next().map(|((a, b, c), d)| (a, b, c, d))
-            }
-
-            #[inline]
-            fn size_hint(&self) -> (usize, Option<usize>) {
-                self.subzip.size_hint()
-            }
-        }
-
-        fn zip4<IA, IB, IC, ID>(ia: IA, ib: IB, ic: IC, id: ID)
-            -> Zip4<IA::IntoIter, IB::IntoIter, IC::IntoIter, ID::IntoIter> where
-            IA: IntoIterator,
-            IB: IntoIterator,
-            IC: IntoIterator,
-            ID: IntoIterator,
-        {
-            Zip4 {
-                subzip: zip3(ia, ib, ic).zip(id.into_iter())
-            }
-        }
-        */
     );
 }
 
+impl_zipn!(Zip3 zip3 Zip2 zip2
+           (A a IA ia
+            B b IB ib)
+           C c IC ic);
+impl_zipn!(Zip4 zip4 Zip3 zip3
+           (A a IA ia
+            B b IB ib
+            C c IC ic)
+           D d ID id);
 impl_zipn!(Zip5 zip5 Zip4 zip4
            (A a IA ia
             B b IB ib

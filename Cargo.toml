@@ -1,0 +1,4 @@
+[package]
+name = "multizip"
+version = "0.1.0"
+authors = ["Marc Dupont <marc@mdup.fr>"]

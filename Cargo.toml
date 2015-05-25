@@ -2,3 +2,10 @@
 name = "multizip"
 version = "0.1.0"
 authors = ["Marc Dupont <marc@mdup.fr>"]
+description = "Zip 3, 4, 5 or more Rust iterators"
+#documentation = "" #TODO
+homepage = "https://github.com/mdup/multizip"
+repository = "https://github.com/mdup/multizip"
+readme = "README.md"
+keywords = ["zip", "iterator", "tuple"]
+license = "MIT"

@@ -5,40 +5,35 @@ Zip 3, 4, 5 or more Rust iterators
 
 ## Description
 
-With Rust's stdlib you can only zip 2 iterators at a time:
+With Rust's stdlib you can only zip 2 iterators at a time, which causes nesting:
 ```rust
 let a: Vec<i8> = vec![0, 1, 2];
 let b: Vec<i8> = vec![3, 4, 5];
 let c: Vec<i8> = vec![6, 7, 8];
 let d: Vec<i8> = vec![9, 10, 11];
 
-let abc = a.iter().zip(b.iter()).zip(c.iter())
-           .map(|((&aa, &bb), &cc)| aa+bb+cc);
-//               ((   ,    ),    )
-//               ^~~~~~~~~~^~~~~~^ awkward!
+let abc: Vec<i8> = a.iter().zip(b.iter()).zip(c.iter())
+                    .map(|((&aa, &bb), &cc)| aa+bb+cc).collect();
+//                        ((   ,    ),    )
+//                        ^~~~~~~~~~^~~~~~^ awkward!
 
-let abcd = a.iter().zip(b.iter()).zip(c.iter()).zip(d.iter())
-           .map(|(((&aa, &bb), &cc), &dd)| aa+bb+cc+dd);
-//               (((   ,    ),    ),    )
-//               ^~~~~~~~~~~^~~~~~^~~~~~^ ughhh!
+let abcd: Vec<i8> = a.iter().zip(b.iter()).zip(c.iter()).zip(d.iter())
+                     .map(|(((&aa, &bb), &cc), &dd)| aa+bb+cc+dd).collect();
+//                         (((   ,    ),    ),    )
+//                         ^~~~~~~~~~~^~~~~~^~~~~~^ ughhh!
 ```
 
 With `multizip`, you get a flattened version of `zip`:
 ```rust
-let abc = multizip::zip3(a.iter(),
-                         b.iter(),
-                         c.iter())
-         .map(|(&aa, &bb, &cc)| aa+bb+cc))
-//             (   ,    ,    )
-//             ^~~~~~~~~~~~~~^ oooh!
+let abc: Vec<i8> = multizip::zip3(a.iter(), b.iter(), c.iter())
+                   .map(|(&aa, &bb, &cc)| aa+bb+cc)).collect();
+//                       (   ,    ,    )
+//                       ^~~~~~~~~~~~~~^ oooh!
 
-let abcd = multizip::zip4(a.iter(),
-                          b.iter(),
-                          c.iter(),
-                          d.iter())
-         .map(|(&aa, &bb, &cc, &dd)| aa+bb+cc+dd)
-//             (   ,    ,    ,    )
-//             ^~~~~~~~~~~~~~~~~~~^ sweet!
+let abcd: Vec<i8> = multizip::zip4(a.iter(), b.iter(), c.iter(), d.iter())
+                    .map(|(&aa, &bb, &cc, &dd)| aa+bb+cc+dd).collect();
+//                        (   ,    ,    ,    )
+//                        ^~~~~~~~~~~~~~~~~~~^ sweet!
 ```
 
 ## How to use

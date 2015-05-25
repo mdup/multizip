@@ -36,6 +36,13 @@ let abcd: Vec<i8> = multizip::zip4(a.iter(), b.iter(), c.iter(), d.iter())
 //                        ^~~~~~~~~~~~~~~~~~~^ sweet!
 ```
 
+Of course, it also works in a `for` loop:
+```rust
+for (aa, bb, cc) in multizip::zip3(a, b, c) {
+    println!("aa={}, bb={}, cc={}", aa, bb, cc);
+}
+```
+
 ## How to use
 TODO: upload to crates.io and update here with Cargo instructions.
 

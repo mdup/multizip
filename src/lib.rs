@@ -24,7 +24,7 @@ B: Iterator
         self.subzip.size_hint()
     }
 }
-fn zip2<U, V>(u: U, v: V) -> Zip2<U::IntoIter, V::IntoIter> where
+pub fn zip2<U, V>(u: U, v: V) -> Zip2<U::IntoIter, V::IntoIter> where
     U: IntoIterator,
     V: IntoIterator,
 {
@@ -67,7 +67,7 @@ fn zip2<U, V>(u: U, v: V) -> Zip2<U::IntoIter, V::IntoIter> where
 //     }
 // }
 //
-// fn zip4<IA, IB, IC, ID>(ia: IA, ib: IB, ic: IC, id: ID)
+// pub fn zip4<IA, IB, IC, ID>(ia: IA, ib: IB, ic: IC, id: ID)
 //     -> Zip4<IA::IntoIter, IB::IntoIter, IC::IntoIter, ID::IntoIter> where
 //     IA: IntoIterator,
 //     IB: IntoIterator,
@@ -117,7 +117,7 @@ macro_rules! impl_zipn {
                 self.subzip.size_hint()
             }
         }
-        fn $zipn<$($IA),*, $IALast>($($ia: $IA),*, $ialast: $IALast)
+        pub fn $zipn<$($IA),*, $IALast>($($ia: $IA),*, $ialast: $IALast)
            -> $ZipN<$($IA::IntoIter),*, $IALast::IntoIter>
         where
             $($IA: IntoIterator),*,

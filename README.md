@@ -68,8 +68,10 @@ fn main() {
 
 ## FAQ
 ### How much variables can I zip together?
-Rust supports up to 12 variables in a single tuple, so the following are
-implemented: `zip2()`, `zip3()`, `zip4()`..., `zip12()`.
+Rust supports an unlimited number of variables in a single tuple. However, all
+useful traits in the `std` crate are only implemented for up to 12 elements;
+`multizip` keeps the same convention, so the following are implemented:
+`zip2()`, `zip3()`, `zip4()`..., `zip12()`.
 
 If you need more than 12, something is probably wrong with your design. Consider
 something more appropriate than tuples.
